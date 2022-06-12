@@ -4,23 +4,26 @@ import { Activity } from "../models/activity";
 import { v4 as uuid } from "uuid";
 
 export default class ActivityStore {
-  activities: Activity[] = [];
+  activityRegister = new Map<string, Activity>();
   selectedActivity: Activity | undefined = undefined;
   editMode = false;
   loading = false;
-  loadingInit = false;
+  loadingInit = true;
 
   constructor() {
     makeAutoObservable(this);
   }
 
+  get activitiesByDate() {
+    return Array.from(this.activityRegister.values()).sort((a, b) => Date.parse(a.date) - Date.parse(b.date));
+  }
+
   loadActivites = async () => {
-    this.setLoadingInit(true);
     try {
       const activities = await agent.activities.list();
       activities.forEach((activitie) => {
         activitie.date = activitie.date.split("T")[0];
-        this.activities.push(activitie);
+        this.activityRegister.set(activitie.id, activitie);
       });
       this.setLoadingInit(false);
     } catch (error) {
@@ -34,7 +37,7 @@ export default class ActivityStore {
   };
 
   selectActivity = (id: string) => {
-    this.selectedActivity = this.activities.find((x) => x.id === id);
+    this.selectedActivity = this.activityRegister.get(id);
   };
   cancelSelectedActivity = () => {
     this.selectedActivity = undefined;
@@ -55,7 +58,7 @@ export default class ActivityStore {
     try {
       await agent.activities.create(activity);
       runInAction(() => {
-        this.activities.push(activity);
+        this.activityRegister.set(activity.id, activity);
         this.selectedActivity = activity;
         this.editMode = false;
         this.loading = false;
@@ -72,7 +75,7 @@ export default class ActivityStore {
     try {
       await agent.activities.update(activity);
       runInAction(() => {
-        this.activities = [...this.activities.filter((x) => x.id !== activity.id), activity]; //create a new array with the updated activity
+        this.activityRegister.set(activity.id, activity);
         this.selectedActivity = activity;
         this.editMode = false;
         this.loading = false;
@@ -80,6 +83,21 @@ export default class ActivityStore {
       this.loading = false;
     } catch (error) {
       console.log(error);
+      runInAction(() => {
+        this.loading = false;
+      });
+    }
+  };
+  deleteActivity = async (id: string) => {
+    this.loading = true;
+    try {
+      await agent.activities.delete(id);
+      runInAction(() => {
+        this.activityRegister.delete(id);
+        if (this.selectedActivity?.id === id) this.cancelSelectedActivity();
+        this.loading = false;
+      });
+    } catch (error) {
       runInAction(() => {
         this.loading = false;
       });
