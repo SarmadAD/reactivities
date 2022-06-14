@@ -1,7 +1,7 @@
-import React from "react";
 import ReactDOM from "react-dom/client";
 import "./app/layouts/styles.css";
 import App from "./app/layouts/App";
+import 'react-calendar/dist/Calendar.css';
 import reportWebVitals from "./reportWebVitals";
 import { store, StoreContext } from "./app/stores/store";
 import { BrowserRouter } from "react-router-dom";
