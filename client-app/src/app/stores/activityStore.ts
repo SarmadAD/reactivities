@@ -67,6 +67,13 @@ export default class ActivityStore {
 
   private setActivity = (activity: Activity) => {
     const user = store.userStore.user;
+    if(user){
+      activity.isGoing = activity.attendees!.some(
+        a => a.username === user.username
+      )
+      activity.isHost = activity.hostUsername === user.username;
+      activity.host = activity.attendees?.find(x=>x.username === activity.hostUsername);
+    }
     activity.date = new Date(activity.date!)
     this.activityRegister.set(activity.id, activity);
   };
