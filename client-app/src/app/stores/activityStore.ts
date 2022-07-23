@@ -2,6 +2,7 @@ import { format } from "date-fns";
 import { makeAutoObservable, runInAction } from "mobx";
 import agent from "../api/agent";
 import { Activity } from "../models/activity";
+import { store } from "./store";
 
 export default class ActivityStore {
   activityRegister = new Map<string, Activity>();
@@ -65,6 +66,7 @@ export default class ActivityStore {
   };
 
   private setActivity = (activity: Activity) => {
+    const user = store.userStore.user;
     activity.date = new Date(activity.date!)
     this.activityRegister.set(activity.id, activity);
   };
