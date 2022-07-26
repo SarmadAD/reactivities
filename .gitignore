@@ -5,6 +5,8 @@
 
 appsettings.json
 reactivities.db-shm
+reactivities.db-wal
+reactivities.db
 # User-specific files
 *.rsuser
 *.suo
